@@ -3,56 +3,57 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Book;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
     public function index()
     {
-       $books = Book::all();
-       if (!$books) {
-           return response()->json([
-               'success' => false,
-               'message' => 'No books founded'
-           ], 400);
-       }
-       return response()->json([
-           'success' => true,
-           'data' => $books->toArray()
-       ], 200);
+        return response()->json(['Books' => Book::orderByDesc('created_at')->get()], 200);
     }
 
     public function store(Request $request)
     {
-        $book = new Book;
-        $book->ISBN = $request->ISBN;
-        $book->title = $request->title;
-        $book->author = $request->author;
-        $book->editorial = $request->editorial;
-        $book->gender = $request->gender;
-        $book->user_id = auth()->user()->id;
-        $book->save();
+        $validator = Validator::make($request->all(), [
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'author' => ['required', 'string', 'min:3', 'max:255'],
+            'editorial' => ['required', 'string', 'min:3', 'max:255'],
+            'gender' => ['required', 'string', 'min:3', 'max:255'],
+            'ISBN' => ['required', 'string', 'min:3', 'max:255'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ], 400);
+        }
+
+        Auth::user()->Book()->create($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Book created'
+            'data' => "Created"
         ], 200);
     }
 
     public function show($id)
     {
-        $books = Book::find($id);
-        if (!$books) {
+        $book = Book::find($id);
+
+        if (!$book) {
             return response()->json([
                 'success' => false,
-                'message' => 'Not found book whit id= ' .$id
+                'message' => 'Book ' . $id . ' not found'
             ], 400);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $books->toArray()
+            'data' => $book->toArray()
         ], 200);
     }
 
@@ -63,44 +64,46 @@ class BookController extends Controller
         if (!$book) {
             return response()->json([
                 'success' => false,
-                'message' => 'Not found book whit id= ' .$id
+                'message' => 'Book ' . $id . ' not found'
             ], 400);
         }
-
-        if (auth()->user()->id != $book->user_id) {
+        $validator = Validator::make($request->all(), [
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'author' => ['required', 'string', 'min:3', 'max:255'],
+            'editorial' => ['required', 'string', 'min:3', 'max:255'],
+            'gender' => ['required', 'string', 'min:3', 'max:255'],
+            'ISBN' => ['required', 'string', 'min:3', 'max:255'],
+        ]);
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission'
+                'message' => $validator->errors()
             ], 400);
         }
 
-        $book->update([
-            'ISBN' => $request->ISBN,
-            'title' => $request->title,
-            'author' => $request->author,
-            'editorial' => $request->editorial,
-            'gender' => $request->gender
-        ]);
+        $book->update($request->all());
+
         return response()->json([
             'success' => true,
-            'message' => 'Updated book ' .$id
+            'message' => 'Updated'
         ], 200);
     }
 
     public function destroy($id)
     {
         $book = Book::find($id);
-
-        if (auth()->user()->id != $book->user_id) {
+        if (!$book) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission'
+                'message' => 'Book ' . $id . ' not found'
             ], 400);
         }
-        Book::destroy($id);
+
+        $book->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Deleted book ' .$id
+            'message' => 'Deleted'
         ], 200);
     }
 }

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 
-class Book extends Model
+class Book  extends Authenticatable
 {
-    use HasFactory;
+    use Notifiable, HasApiTokens;
 
     protected $fillable = [
         "ISBN",
@@ -19,6 +20,6 @@ class Book extends Model
     ];
 
     public function User(){
-        return $this->hasOne(User::class);
+        return $this->belongsTo(User::class);
     }
 }

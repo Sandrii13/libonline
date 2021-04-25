@@ -21,7 +21,7 @@ class UserController extends BaseController
 
         $user = User::create($dataValidated);
 
-        $token = $user->createToken('AppNAME')->accessToken;
+        $token = $user->createToken('libonlinem7')->accessToken;
 
         return response()->json(['token' => $token], 200);
     }
@@ -31,7 +31,7 @@ class UserController extends BaseController
         if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
 
             $user = Auth::user();
-            $success['token'] =  $user->createToken('AppName')->accessToken;
+            $success['token'] =  $user->createToken('libonlinem7')->accessToken;
             $success['user'] =  $user->email;
 
             return $this->sendResponse($success, 'User login successfully.');
