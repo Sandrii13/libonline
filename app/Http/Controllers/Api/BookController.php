@@ -32,7 +32,7 @@ class BookController extends Controller
             ], 400);
         }
 
-        Auth::user()->Book()->create($request->all());
+        Auth::user()->books()->create($request->all());
 
         return response()->json([
             'success' => true,
